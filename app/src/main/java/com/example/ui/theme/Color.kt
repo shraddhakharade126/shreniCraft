@@ -2,48 +2,76 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ShreniSetu Brand Palette: Forest Teal & Terracotta Craft
-val ShreniTealPrimary = Color(0xFF00695C)
-val ShreniTealOnPrimary = Color(0xFFFFFFFF)
-val ShreniTealContainer = Color(0xFFE0F2F1)
-val ShreniTealOnContainer = Color(0xFF00201A)
-
-val ShreniTerracottaSecondary = Color(0xFFC85A32)
-val ShreniTerracottaOnSecondary = Color(0xFFFFFFFF)
+// ShreniKart Design System: Terracotta primary, Deep Maroon secondary, Ivory canvas, Gold accent
+val ShreniTerracottaPrimary = Color(0xFFC85A32)
+val ShreniTerracottaOnPrimary = Color(0xFFFFFFFF)
 val ShreniTerracottaContainer = Color(0xFFFFECE4)
 val ShreniTerracottaOnContainer = Color(0xFF3B1202)
 
-val ShreniIndigoTertiary = Color(0xFF283593)
-val ShreniIndigoOnTertiary = Color(0xFFFFFFFF)
-val ShreniIndigoContainer = Color(0xFFE8EAF6)
-val ShreniIndigoOnContainer = Color(0xFF0D1647)
+val ShreniMaroonSecondary = Color(0xFF5B1D28)
+val ShreniMaroonOnSecondary = Color(0xFFFFFFFF)
+val ShreniMaroonContainer = Color(0xFFFDECEE)
+val ShreniMaroonOnContainer = Color(0xFF2E0911)
 
-val ShreniBackground = Color(0xFFFAF8F5)
-val ShreniOnBackground = Color(0xFF1B1C1C)
+val ShreniGoldAccent = Color(0xFFD4A340)
+val ShreniGoldOnAccent = Color(0xFF2D1F00)
+val ShreniGoldContainer = Color(0xFFFDF7EB)
+val ShreniGoldOnContainer = Color(0xFF533E0B)
+
+val ShreniBackground = Color(0xFFFAF6F0)
+val ShreniOnBackground = Color(0xFF2E1E17)
 val ShreniSurface = Color(0xFFFFFFFF)
-val ShreniOnSurface = Color(0xFF1B1C1C)
-val ShreniSurfaceVariant = Color(0xFFEDE8E0)
-val ShreniOnSurfaceVariant = Color(0xFF484643)
+val ShreniOnSurface = Color(0xFF2E1E17)
+val ShreniSurfaceVariant = Color(0xFFF3EDE4)
+val ShreniOnSurfaceVariant = Color(0xFF7A685D)
+val ShreniBorder = Color(0xFFE5DACF)
 
 val ShreniSuccessGreen = Color(0xFF2E7D32)
 val ShreniSuccessContainer = Color(0xFFE8F5E9)
-val ShreniWarningAmber = Color(0xFFED6C02)
-val ShreniWarningContainer = Color(0xFFFFF3E0)
+val ShreniSuccessOnContainer = Color(0xFF0F3813)
 
 // Dark Theme Variants
-val ShreniTealPrimaryDark = Color(0xFF80CBC4)
-val ShreniTealOnPrimaryDark = Color(0xFF00382F)
-val ShreniTealContainerDark = Color(0xFF004D40)
-val ShreniTealOnContainerDark = Color(0xFFB2DFDB)
-
-val ShreniTerracottaSecondaryDark = Color(0xFFFFAB91)
-val ShreniTerracottaOnSecondaryDark = Color(0xFF5D1D05)
+val ShreniTerracottaPrimaryDark = Color(0xFFFFAB91)
+val ShreniTerracottaOnPrimaryDark = Color(0xFF5D1D05)
 val ShreniTerracottaContainerDark = Color(0xFF8A2E0F)
 val ShreniTerracottaOnContainerDark = Color(0xFFFFDBCF)
 
-val ShreniBackgroundDark = Color(0xFF121414)
-val ShreniOnBackgroundDark = Color(0xFFE2E3E2)
-val ShreniSurfaceDark = Color(0xFF1B1D1D)
-val ShreniOnSurfaceDark = Color(0xFFE2E3E2)
-val ShreniSurfaceVariantDark = Color(0xFF2A2D2D)
-val ShreniOnSurfaceVariantDark = Color(0xFFC6C6C5)
+val ShreniMaroonSecondaryDark = Color(0xFFF2B8C2)
+val ShreniMaroonOnSecondaryDark = Color(0xFF4A101C)
+val ShreniMaroonContainerDark = Color(0xFF5B1D28)
+val ShreniMaroonOnContainerDark = Color(0xFFFCDCE2)
+
+val ShreniBackgroundDark = Color(0xFF1B1614)
+val ShreniOnBackgroundDark = Color(0xFFF2ECE6)
+val ShreniSurfaceDark = Color(0xFF241F1C)
+val ShreniOnSurfaceDark = Color(0xFFF2ECE6)
+val ShreniSurfaceVariantDark = Color(0xFF332B27)
+val ShreniOnSurfaceVariantDark = Color(0xFFB8A99F)
+
+// Compatibility aliases mapped to the new ShreniKart palette
+val ShreniTealPrimary = ShreniTerracottaPrimary
+val ShreniTealPrimaryDark = ShreniTerracottaPrimaryDark
+val ShreniTealContainer = ShreniTerracottaContainer
+val ShreniTealContainerDark = ShreniTerracottaContainerDark
+val ShreniTealOnPrimary = ShreniTerracottaOnPrimary
+val ShreniTealOnPrimaryDark = ShreniTerracottaOnPrimaryDark
+val ShreniTealOnContainer = ShreniTerracottaOnContainer
+val ShreniTealOnContainerDark = ShreniTerracottaOnContainerDark
+
+val ShreniTerracottaSecondary = ShreniMaroonSecondary
+val ShreniTerracottaSecondaryDark = ShreniMaroonSecondaryDark
+val ShreniTerracottaContainerLegacy = ShreniMaroonContainer
+val ShreniTerracottaContainerDarkLegacy = ShreniMaroonContainerDark
+val ShreniTerracottaOnSecondary = ShreniMaroonOnSecondary
+val ShreniTerracottaOnSecondaryDark = ShreniMaroonOnSecondaryDark
+
+val ShreniIndigoTertiary = ShreniGoldAccent
+val ShreniIndigoContainer = ShreniGoldContainer
+val ShreniIndigoOnTertiary = ShreniGoldOnAccent
+val ShreniIndigoOnContainer = ShreniGoldOnContainer
+
+val ShreniWarningAmber = Color(0xFFD97706)
+val ShreniWarningAmberContainer = Color(0xFFFEF3C7)
+val ShreniWarningAmberOnContainer = Color(0xFF92400E)
+
+

@@ -223,8 +223,15 @@ object ImageUtils {
 
     /**
      * Non-generative image enhancement.
-     * Moderate brightness, contrast, white balance & sharpness adjustment.
-     * Does NOT invent or distort textures, shapes, or decorations.
+     * Allowed: brightness, contrast, sharpness, color correction, white balance, mild noise reduction.
+     * Strictly FORBIDDEN:
+     * - generate pixels representing new product parts
+     * - remove product decorations
+     * - change product shape
+     * - modify product geometry
+     * - invent texture
+     * - reconstruct missing areas
+     * Original bitmap is never modified.
      */
     fun enhanceProductImage(
         bitmap: Bitmap,
@@ -239,15 +246,15 @@ object ImageUtils {
             isFilterBitmap = true
         }
 
-        // ColorMatrix combining brightness, contrast, and saturation
+        // ColorMatrix combining brightness, contrast, and color correction
         val cm = ColorMatrix()
 
-        // Saturation
+        // 1. Color correction / Saturation
         val satMatrix = ColorMatrix().apply {
-            setSaturation(settings.saturation)
+            setSaturation(settings.colorCorrection)
         }
 
-        // Contrast and Brightness
+        // 2. Contrast and Brightness
         val scale = settings.contrast
         val translate = settings.brightness
         val contrastMatrix = ColorMatrix(floatArrayOf(
@@ -257,17 +264,111 @@ object ImageUtils {
             0f, 0f, 0f, 1f, 0f
         ))
 
+        // 3. White Balance (color temperature warmth / cool shift via red/blue gain)
+        val redScale = (1.0f + (settings.whiteBalance * 0.008f)).coerceIn(0.75f, 1.25f)
+        val blueScale = (1.0f - (settings.whiteBalance * 0.008f)).coerceIn(0.75f, 1.25f)
+        val wbMatrix = ColorMatrix(floatArrayOf(
+            redScale, 0f, 0f, 0f, 0f,
+            0f, 1f, 0f, 0f, 0f,
+            0f, 0f, blueScale, 0f, 0f,
+            0f, 0f, 0f, 1f, 0f
+        ))
+
         cm.setConcat(contrastMatrix, satMatrix)
+        cm.postConcat(wbMatrix)
         paint.colorFilter = ColorMatrixColorFilter(cm)
 
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
 
-        // Mild sharpening kernel application if sharpness > 0
-        if (settings.sharpness > 0.05f) {
-            return applyMildSharpen(enhanced, settings.sharpness)
+        var processed = enhanced
+
+        // 4. Mild Noise Reduction: edge-preserving 3x3 filter strictly preserving craft decorations
+        if (settings.noiseReduction > 0.04f) {
+            processed = applyMildNoiseReduction(processed, settings.noiseReduction)
         }
 
-        return enhanced
+        // 5. Mild sharpening kernel application if sharpness > 0 (clarity without geometric distortion)
+        if (settings.sharpness > 0.05f) {
+            processed = applyMildSharpen(processed, settings.sharpness)
+        }
+
+        return processed
+    }
+
+    /**
+     * Edge-preserving mild noise reduction.
+     * Preserves handcraft embroidery, carvings, textures, and shape boundaries.
+     * Only smooths uniform sensor noise regions.
+     */
+    private fun applyMildNoiseReduction(src: Bitmap, strength: Float): Bitmap {
+        val w = src.width
+        val h = src.height
+        val output = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+
+        val pixels = IntArray(w * h)
+        val outPixels = IntArray(w * h)
+        src.getPixels(pixels, 0, w, 0, 0, w, h)
+
+        val edgeThreshold = (35f * (1.0f - strength * 0.4f)).toInt().coerceIn(16, 45)
+        val maxBlendWeight = (strength * 0.7f).coerceIn(0.1f, 0.6f)
+
+        for (y in 1 until h - 1) {
+            for (x in 1 until w - 1) {
+                val idx = y * w + x
+                val center = pixels[idx]
+                val cr = Color.red(center)
+                val cg = Color.green(center)
+                val cb = Color.blue(center)
+
+                var sumR = cr.toFloat()
+                var sumG = cg.toFloat()
+                var sumB = cb.toFloat()
+                var totalWeight = 1.0f
+
+                val n1 = pixels[(y - 1) * w + x]
+                val n2 = pixels[(y + 1) * w + x]
+                val n3 = pixels[y * w + (x - 1)]
+                val n4 = pixels[y * w + (x + 1)]
+
+                for (n in intArrayOf(n1, n2, n3, n4)) {
+                    val nr = Color.red(n)
+                    val ng = Color.green(n)
+                    val nb = Color.blue(n)
+                    val diff = abs(nr - cr) + abs(ng - cg) + abs(nb - cb)
+
+                    // Strictly skip edges so product details and decorations are NEVER removed
+                    if (diff < edgeThreshold) {
+                        val weight = (1.0f - (diff.toFloat() / edgeThreshold)) * maxBlendWeight
+                        sumR += nr * weight
+                        sumG += ng * weight
+                        sumB += nb * weight
+                        totalWeight += weight
+                    }
+                }
+
+                val outR = (sumR / totalWeight).toInt().coerceIn(0, 255)
+                val outG = (sumG / totalWeight).toInt().coerceIn(0, 255)
+                val outB = (sumB / totalWeight).toInt().coerceIn(0, 255)
+
+                outPixels[idx] = Color.argb(Color.alpha(center), outR, outG, outB)
+            }
+        }
+
+        // Copy border rows and columns
+        for (x in 0 until w) {
+            outPixels[x] = pixels[x]
+            outPixels[(h - 1) * w + x] = pixels[(h - 1) * w + x]
+        }
+        for (y in 0 until h) {
+            outPixels[y * w] = pixels[y * w]
+            outPixels[y * w + (w - 1)] = pixels[y * w + (w - 1)]
+        }
+
+        output.setPixels(outPixels, 0, w, 0, 0, w, h)
+        if (src != output) {
+            src.recycle()
+        }
+        return output
     }
 
     /**

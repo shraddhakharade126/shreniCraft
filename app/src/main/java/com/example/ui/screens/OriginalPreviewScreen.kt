@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Shield
@@ -114,7 +118,8 @@ fun OriginalPreviewScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f, fill = false)
+                    .heightIn(min = 180.dp, max = 320.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     CraftImageView(
@@ -146,7 +151,7 @@ fun OriginalPreviewScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Action Buttons: Retake, Choose Another, Continue
+            // Action Buttons: Retake, Choose Another, Accept Photo
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -156,7 +161,7 @@ fun OriginalPreviewScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp)
-                        .testTag("original_preview_retake_button"),
+                        .testTag("retake_photo_button"),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
@@ -173,7 +178,7 @@ fun OriginalPreviewScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp)
-                        .testTag("original_preview_choose_another_button"),
+                        .testTag("choose_another_button"),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
@@ -193,16 +198,22 @@ fun OriginalPreviewScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .testTag("original_preview_continue_button"),
+                    .testTag("accept_photo_button"),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = ShreniTealPrimary)
             ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Continue to Image Options",
+                    text = "Accept Photo",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,

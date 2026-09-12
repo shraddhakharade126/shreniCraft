@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Category
@@ -79,30 +82,18 @@ fun ProductReviewScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Hero Header Card with thumbnail
+            // Dual Image Preview: Final Processed Image vs Original Image Stored Separately
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.size(76.dp)
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        CraftImageView(
-                            imageUriOrPath = productImage?.activeDisplayUri,
-                            contentDescription = "Selected product photo",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
@@ -110,26 +101,94 @@ fun ProductReviewScreen(
                                 tint = ShreniTealPrimary,
                                 modifier = Modifier.size(16.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "AI Craft Analysis",
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "Product Analysis & Media",
+                                style = MaterialTheme.typography.labelMedium,
                                 color = ShreniTealPrimary,
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = currentAnalysis.productName,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1
-                        )
-                        Text(
-                            text = "${currentAnalysis.craftType} • ${currentAnalysis.category}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+
+                        Surface(
+                            color = ShreniTealPrimary.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "Suggested ₹${currentAnalysis.suggestedPriceMin.toInt()} - ₹${currentAnalysis.suggestedPriceMax.toInt()}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = ShreniTealPrimary,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Card 1: Final Processed Image (Product Image)
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(110.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                CraftImageView(
+                                    imageUriOrPath = productImage?.activeDisplayUri,
+                                    contentDescription = "Final processed product image",
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                Surface(
+                                    color = ShreniTealPrimary.copy(alpha = 0.85f),
+                                    shape = RoundedCornerShape(topStart = 8.dp),
+                                    modifier = Modifier.align(Alignment.BottomEnd)
+                                ) {
+                                    Text(
+                                        text = "Product Image",
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Card 2: Original Image (Stored Separately)
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(110.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                CraftImageView(
+                                    imageUriOrPath = productImage?.originalUri,
+                                    contentDescription = "Original unedited photo",
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                Surface(
+                                    color = Color.Black.copy(alpha = 0.7f),
+                                    shape = RoundedCornerShape(topStart = 8.dp),
+                                    modifier = Modifier.align(Alignment.BottomEnd)
+                                ) {
+                                    Text(
+                                        text = "Original (Stored)",
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -212,7 +271,7 @@ fun ProductReviewScreen(
                 value = currentAnalysis.tags.joinToString(", "),
                 onValueChange = { viewModel.updateTags(it) },
                 label = { Text("Marketplace Tags (comma-separated)") },
-                leadingIcon = { Icon(Icons.Default.Label, contentDescription = null) },
+                leadingIcon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("input_tags"),

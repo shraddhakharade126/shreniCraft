@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -28,7 +31,8 @@ fun CraftImageView(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    isTransparentCheckerboard: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -36,6 +40,28 @@ fun CraftImageView(
             .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
+        if (isTransparentCheckerboard) {
+            // Visual transparency checkerboard pattern
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val squareSize = 14.dp.toPx()
+                val cols = (size.width / squareSize).toInt() + 1
+                val rows = (size.height / squareSize).toInt() + 1
+                val lightColor = Color(0xFFF0F0F0)
+                val darkColor = Color(0xFFDCDCDC)
+
+                for (r in 0 until rows) {
+                    for (c in 0 until cols) {
+                        val color = if ((r + c) % 2 == 0) lightColor else darkColor
+                        drawRect(
+                            color = color,
+                            topLeft = Offset(c * squareSize, r * squareSize),
+                            size = Size(squareSize, squareSize)
+                        )
+                    }
+                }
+            }
+        }
+
         if (imageUriOrPath.isNullOrBlank()) {
             Icon(
                 imageVector = Icons.Default.Image,

@@ -19,12 +19,12 @@ object DemoAssetGenerator {
      * Generates a sample craft bitmap with realistic artisan textures and background
      * for instant testing in the emulator or when capturing demo crafts.
      */
-    suspend fun getOrCreateSampleCraftFile(context: Context, craft: DemoCraft): File = withContext(Dispatchers.IO) {
+    fun getOrCreateSampleCraftFileSync(context: Context, craft: DemoCraft): File {
         val craftsDir = File(context.filesDir, "sample_crafts").apply { mkdirs() }
         val targetFile = File(craftsDir, "${craft.id}.png")
 
         if (targetFile.exists() && targetFile.length() > 0) {
-            return@withContext targetFile
+            return targetFile
         }
 
         val width = 800
@@ -60,7 +60,11 @@ object DemoAssetGenerator {
         }
         bitmap.recycle()
 
-        targetFile
+        return targetFile
+    }
+
+    suspend fun getOrCreateSampleCraftFile(context: Context, craft: DemoCraft): File = withContext(Dispatchers.IO) {
+        getOrCreateSampleCraftFileSync(context, craft)
     }
 
     private fun drawTerracottaPot(canvas: Canvas, w: Int, h: Int) {

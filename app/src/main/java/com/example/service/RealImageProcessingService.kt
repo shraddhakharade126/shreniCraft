@@ -2,6 +2,9 @@ package com.example.service
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Log
+import com.example.BuildConfig
 import com.example.model.EnhancementSettings
 import com.example.model.ImageProcessingResult
 import com.example.model.ProcessingOptions
@@ -9,9 +12,20 @@ import com.example.model.ProductIntegrityResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class RealImageProcessingService(private val context: Context) : ImageProcessingService {
+
+    private val httpClient = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(20, TimeUnit.SECONDS)
+        .build()
 
     override suspend fun processImage(
         originalFile: File,
@@ -43,12 +57,19 @@ class RealImageProcessingService(private val context: Context) : ImageProcessing
 
             // STEP 3: Removing background (if selected)
             if (options.removeBackground) {
-                onProgressUpdate?.invoke(2, "Removing background")
-                delay(400)
-                val (bgRemovedBitmap, integrity) = ImageUtils.removeBackgroundPreservingProduct(currentBitmap)
-                currentBitmap = bgRemovedBitmap
-                integrityResult = integrity
-                wasBgRemoved = true
+                onProgressUpdate?.invoke(2, "Removing background with AI")
+                val bgService = RealBackgroundRemovalService(context)
+                val bgResult = bgService.removeBackground(originalFile, preferTransparent = false)
+                if (bgResult.success && bgResult.processedUri != null) {
+                    val processedFile = File(bgResult.processedUri)
+                    if (processedFile.exists()) {
+                        currentBitmap = ImageUtils.decodeSampledBitmap(processedFile)
+                        integrityResult = bgResult.integrityResult
+                        wasBgRemoved = true
+                    }
+                } else {
+                    integrityResult = bgResult.integrityResult
+                }
             } else {
                 onProgressUpdate?.invoke(2, "Preserving background")
                 delay(200)

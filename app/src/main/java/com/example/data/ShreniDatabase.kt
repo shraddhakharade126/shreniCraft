@@ -5,10 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.model.ProductListing
+import com.example.model.ProductScanRecord
 
-@Database(entities = [ProductListing::class], version = 1, exportSchema = false)
+@Database(entities = [ProductListing::class, ProductScanRecord::class], version = 2, exportSchema = false)
 abstract class ShreniDatabase : RoomDatabase() {
     abstract fun productListingDao(): ProductListingDao
+    abstract fun productScanDao(): ProductScanDao
 
     companion object {
         @Volatile
@@ -20,7 +22,7 @@ abstract class ShreniDatabase : RoomDatabase() {
                     context.applicationContext,
                     ShreniDatabase::class.java,
                     "shrenisetu_artisan.db"
-                ).fallbackToDestructiveMigration().build()
+                ).fallbackToDestructiveMigration(dropAllTables = true).build()
                 INSTANCE = instance
                 instance
             }

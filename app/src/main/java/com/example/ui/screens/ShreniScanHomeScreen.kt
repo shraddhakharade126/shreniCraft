@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Shield
@@ -145,11 +146,11 @@ fun ShreniScanHomeScreen(
             // BUTTON 1: CAMERA (Very large touch target)
             item {
                 LargeScanActionButton(
-                    title = "Camera",
-                    subtitle = "Capture photo with live framing guidance",
+                    title = "Capture Product",
+                    subtitle = "Open camera with live framing guidance",
                     icon = Icons.Default.CameraAlt,
                     accentColor = ShreniTealPrimary,
-                    testTag = "scan_action_camera",
+                    testTag = "capture_product_button",
                     onClick = { viewModel.openCamera() }
                 )
             }
@@ -281,6 +282,50 @@ fun ShreniScanHomeScreen(
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            item {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.openScanGallery() }
+                        .testTag("scan_home_gallery_button")
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Collections,
+                            contentDescription = null,
+                            tint = ShreniTealPrimary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "View Authenticity Gallery",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Browse previous scans, review integrity checks & publish crafts.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }

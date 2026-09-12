@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.BackgroundStyle
 import com.example.ui.components.CraftImageView
 import com.example.ui.components.ShreniTopBar
 import com.example.ui.theme.ShreniSuccessGreen
@@ -72,11 +73,13 @@ fun BeforeAfterScreen(
 ) {
     val productImage by viewModel.productImage.collectAsState()
     val integrityResult by viewModel.integrityResult.collectAsState()
+    val backgroundStyle by viewModel.backgroundStyle.collectAsState()
 
     var showProcessed by remember { mutableStateOf(true) }
     var viewMode by remember { mutableStateOf(CompareViewMode.TOGGLE) }
 
     val isIntegrityPassed = integrityResult?.passed != false
+    val confidence = integrityResult?.confidenceScore ?: productImage?.segmentationConfidence ?: 0.98f
 
     Scaffold(
         topBar = {
@@ -126,13 +129,13 @@ fun BeforeAfterScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Product integrity protected ✓",
+                                text = "Product integrity protected ✓ (${(confidence * 100).toInt()}%)",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Text(
-                                text = "Your original product was 100% preserved without alterations.",
+                                text = "100% authentic foreground pixels preserved without alterations. Zero Generative AI.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
                             )
@@ -167,13 +170,13 @@ fun BeforeAfterScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Product boundary is unclear.",
+                                text = "Product boundary is unclear (${(confidence * 100).toInt()}%).",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Text(
-                                text = "We couldn't safely remove the background without risking product edges. You can retake or use the original photo safely.",
+                                text = "Background removal was skipped to protect delicate craft details. You can retake or use the original photo safely.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
                             )
@@ -184,7 +187,81 @@ fun BeforeAfterScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // COMPARISON CONTROLS
+            // BACKGROUND STYLE SELECTOR CHIPS
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Transparent PNG Chip
+                val isTransparent = backgroundStyle == BackgroundStyle.TRANSPARENT && showProcessed
+                Surface(
+                    color = if (isTransparent) ShreniTealPrimary else MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            showProcessed = true
+                            viewModel.setBackgroundStyle(BackgroundStyle.TRANSPARENT)
+                        }
+                ) {
+                    Text(
+                        text = "🔲 Transparent",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = if (isTransparent) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isTransparent) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                        maxLines = 1
+                    )
+                }
+
+                // Studio White Chip
+                val isWhite = backgroundStyle == BackgroundStyle.STUDIO_WHITE && showProcessed
+                Surface(
+                    color = if (isWhite) ShreniTealPrimary else MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            showProcessed = true
+                            viewModel.setBackgroundStyle(BackgroundStyle.STUDIO_WHITE)
+                        }
+                ) {
+                    Text(
+                        text = "⚪ White",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = if (isWhite) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isWhite) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                        maxLines = 1
+                    )
+                }
+
+                // Original Chip
+                val isOriginal = !showProcessed || backgroundStyle == BackgroundStyle.ORIGINAL
+                Surface(
+                    color = if (isOriginal) ShreniTealPrimary else MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            showProcessed = false
+                            viewModel.setBackgroundStyle(BackgroundStyle.ORIGINAL)
+                        }
+                ) {
+                    Text(
+                        text = "📷 Original",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = if (isOriginal) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isOriginal) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                        maxLines = 1
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // COMPARISON CONTROLS (Before/After vs Side-by-Side)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -287,12 +364,20 @@ fun BeforeAfterScreen(
                         shape = RoundedCornerShape(14.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
+                        val splitProcessedUri = when (backgroundStyle) {
+                            BackgroundStyle.TRANSPARENT -> productImage?.transparentUri ?: productImage?.processedUri ?: productImage?.originalUri
+                            BackgroundStyle.STUDIO_WHITE -> productImage?.whiteBackgroundUri ?: productImage?.processedUri ?: productImage?.originalUri
+                            BackgroundStyle.ORIGINAL -> productImage?.originalUri
+                        }
+                        val splitIsCheckerboard = backgroundStyle == BackgroundStyle.TRANSPARENT && productImage?.transparentUri != null
+
                         Box(modifier = Modifier.fillMaxSize()) {
                             CraftImageView(
-                                imageUriOrPath = productImage?.processedUri ?: productImage?.originalUri,
+                                imageUriOrPath = splitProcessedUri,
                                 contentDescription = "Shreni Scan Result",
                                 modifier = Modifier.fillMaxSize(),
-                                backgroundColor = Color(0xFFFCFCFC)
+                                isTransparentCheckerboard = splitIsCheckerboard,
+                                backgroundColor = if (backgroundStyle == BackgroundStyle.STUDIO_WHITE) Color.White else Color(0xFFFCFCFC)
                             )
                             Surface(
                                 color = ShreniTealPrimary,
@@ -302,7 +387,7 @@ fun BeforeAfterScreen(
                                     .padding(8.dp)
                             ) {
                                 Text(
-                                    text = "Studio Result",
+                                    text = if (splitIsCheckerboard) "Transparent" else "Studio Result",
                                     color = Color.White,
                                     style = MaterialTheme.typography.labelSmall,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -320,17 +405,23 @@ fun BeforeAfterScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     val activeUri = if (showProcessed) {
-                        productImage?.processedUri ?: productImage?.originalUri
+                        when (backgroundStyle) {
+                            BackgroundStyle.TRANSPARENT -> productImage?.transparentUri ?: productImage?.processedUri ?: productImage?.originalUri
+                            BackgroundStyle.STUDIO_WHITE -> productImage?.whiteBackgroundUri ?: productImage?.processedUri ?: productImage?.originalUri
+                            BackgroundStyle.ORIGINAL -> productImage?.originalUri
+                        }
                     } else {
                         productImage?.originalUri
                     }
+                    val isCheckerboard = showProcessed && backgroundStyle == BackgroundStyle.TRANSPARENT && productImage?.transparentUri != null
 
                     Box(modifier = Modifier.fillMaxSize()) {
                         CraftImageView(
                             imageUriOrPath = activeUri,
                             contentDescription = if (showProcessed) "Processed image" else "Original image",
                             modifier = Modifier.fillMaxSize(),
-                            backgroundColor = if (showProcessed) Color(0xFFFCFCFC) else MaterialTheme.colorScheme.surfaceVariant
+                            isTransparentCheckerboard = isCheckerboard,
+                            backgroundColor = if (showProcessed && backgroundStyle == BackgroundStyle.STUDIO_WHITE) Color.White else MaterialTheme.colorScheme.surfaceVariant
                         )
 
                         Surface(
@@ -341,7 +432,11 @@ fun BeforeAfterScreen(
                                 .padding(12.dp)
                         ) {
                             Text(
-                                text = if (showProcessed) "SHRENI STUDIO RESULT" else "ORIGINAL PHOTO",
+                                text = if (showProcessed) {
+                                    if (isCheckerboard) "TRANSPARENT PNG (ORIGINAL CRAFT)" else "STUDIO WHITE BACKDROP"
+                                } else {
+                                    "ORIGINAL CAMERA PHOTO"
+                                },
                                 color = Color.White,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
