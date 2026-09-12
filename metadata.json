@@ -1,0 +1,8 @@
+{
+  "name": "ShreniSetu",
+  "description": "ShreniSetu artisan craft platform with Shreni Scan: non-destructive background removal, product integrity verification, AI craft analysis, and Shreni Bazaar listing.",
+  "requestFramePermissions": [
+    "android.permission.CAMERA"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
